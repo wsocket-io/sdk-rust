@@ -2,8 +2,8 @@
 
 Official Rust SDK for [wSocket](https://wsocket.io) — Realtime Pub/Sub over WebSockets.
 
-[![Crates.io](https://img.shields.io/crates/v/wsocket-sdk)](https://crates.io/crates/wsocket-sdk)
-[![docs.rs](https://docs.rs/wsocket-sdk/badge.svg)](https://docs.rs/wsocket-sdk)
+[![Crates.io](https://img.shields.io/crates/v/wsocket-io)](https://crates.io/crates/wsocket-io)
+[![docs.rs](https://docs.rs/wsocket-io/badge.svg)](https://docs.rs/wsocket-io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Installation
@@ -12,13 +12,13 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-wsocket-sdk = "0.1.0"
+wsocket-io = "0.1.0"
 ```
 
 ## Quick Start
 
 ```rust
-use wsocket_sdk::Client;
+use wsocket_io::Client;
 
 #[tokio::main]
 async fn main() {

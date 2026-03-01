@@ -2,7 +2,7 @@
 //!
 //! # Example
 //! ```no_run
-//! use wsocket_sdk::Client;
+//! use wsocket_io::Client;
 //!
 //! #[tokio::main]
 //! async fn main() {

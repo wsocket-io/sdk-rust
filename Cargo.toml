@@ -1,12 +1,12 @@
 [package]
-name = "wsocket-sdk"
+name = "wsocket-io"
 version = "0.1.0"
 edition = "2021"
 description = "wSocket Rust SDK — Realtime Pub/Sub client"
 license = "MIT"
 repository = "https://github.com/wsocket-io/sdk-rust"
 homepage = "https://wsocket.io"
-documentation = "https://docs.rs/wsocket-sdk"
+documentation = "https://docs.rs/wsocket-io"
 readme = "README.md"
 keywords = ["websocket", "pubsub", "realtime", "wsocket"]
 categories = ["network-programming", "web-programming::websocket"]
