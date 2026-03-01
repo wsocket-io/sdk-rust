@@ -1,0 +1,23 @@
+[package]
+name = "wsocket-sdk"
+version = "0.1.0"
+edition = "2021"
+description = "wSocket Rust SDK — Realtime Pub/Sub client"
+license = "MIT"
+repository = "https://github.com/wsocket-io/sdk-rust"
+homepage = "https://wsocket.io"
+documentation = "https://docs.rs/wsocket-sdk"
+readme = "README.md"
+keywords = ["websocket", "pubsub", "realtime", "wsocket"]
+categories = ["network-programming", "web-programming::websocket"]
+authors = ["wSocket <dev@wsocket.io>"]
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = { version = "0.24", features = ["native-tls"] }
+futures-util = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4"] }
+base64 = "0.22"
+reqwest = { version = "0.12", features = ["json"] }
