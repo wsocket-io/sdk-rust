@@ -22,7 +22,7 @@ use wsocket_io::Client;
 
 #[tokio::main]
 async fn main() {
-    let client = Client::connect("wss://your-server.com", "your-api-key")
+    let client = Client::connect("wss://node00.wsocket.online", "your-api-key")
         .await
         .unwrap();
 
