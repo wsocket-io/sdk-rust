@@ -108,13 +108,31 @@ struct PresenceInner {
 pub struct PresenceHandle {
     channel_name: String,
     inner: Arc<Mutex<PresenceInner>>,
-    sender: Arc<Mutex<Option<futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>>,
+    sender: Arc<
+        Mutex<
+            Option<
+                futures_util::stream::SplitSink<
+                    WebSocketStream<MaybeTlsStream<TcpStream>>,
+                    Message,
+                >,
+            >,
+        >,
+    >,
 }
 
 impl PresenceHandle {
     fn new(
         channel_name: String,
-        sender: Arc<Mutex<Option<futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>>,
+        sender: Arc<
+            Mutex<
+                Option<
+                    futures_util::stream::SplitSink<
+                        WebSocketStream<MaybeTlsStream<TcpStream>>,
+                        Message,
+                    >,
+                >,
+            >,
+        >,
     ) -> Self {
         Self {
             channel_name,
@@ -176,22 +194,30 @@ impl PresenceHandle {
 
     async fn emit_enter(&self, member: PresenceMember) {
         let cbs = self.inner.lock().await.enter_cbs.clone();
-        for cb in &cbs { cb(member.clone()); }
+        for cb in &cbs {
+            cb(member.clone());
+        }
     }
 
     async fn emit_leave(&self, member: PresenceMember) {
         let cbs = self.inner.lock().await.leave_cbs.clone();
-        for cb in &cbs { cb(member.clone()); }
+        for cb in &cbs {
+            cb(member.clone());
+        }
     }
 
     async fn emit_update(&self, member: PresenceMember) {
         let cbs = self.inner.lock().await.update_cbs.clone();
-        for cb in &cbs { cb(member.clone()); }
+        for cb in &cbs {
+            cb(member.clone());
+        }
     }
 
     async fn emit_members(&self, members: Vec<PresenceMember>) {
         let cbs = self.inner.lock().await.members_cbs.clone();
-        for cb in &cbs { cb(members.clone()); }
+        for cb in &cbs {
+            cb(members.clone());
+        }
     }
 }
 
@@ -208,13 +234,31 @@ pub struct ChannelHandle {
     pub name: String,
     inner: Arc<Mutex<ChannelInner>>,
     presence: PresenceHandle,
-    sender: Arc<Mutex<Option<futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>>,
+    sender: Arc<
+        Mutex<
+            Option<
+                futures_util::stream::SplitSink<
+                    WebSocketStream<MaybeTlsStream<TcpStream>>,
+                    Message,
+                >,
+            >,
+        >,
+    >,
 }
 
 impl ChannelHandle {
     fn new(
         name: String,
-        sender: Arc<Mutex<Option<futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>>,
+        sender: Arc<
+            Mutex<
+                Option<
+                    futures_util::stream::SplitSink<
+                        WebSocketStream<MaybeTlsStream<TcpStream>>,
+                        Message,
+                    >,
+                >,
+            >,
+        >,
     ) -> Self {
         let presence = PresenceHandle::new(name.clone(), sender.clone());
         Self {
@@ -241,13 +285,17 @@ impl ChannelHandle {
 
     /// Subscribe with optional rewind.
     pub async fn subscribe_with_rewind<F: Fn(Value, MessageMeta) + Send + Sync + 'static>(
-        &self, cb: F, rewind: u32,
+        &self,
+        cb: F,
+        rewind: u32,
     ) {
         let mut inner = self.inner.lock().await;
         inner.callbacks.push(Arc::new(cb));
         if !inner.subscribed {
             let mut msg = json!({ "action": "subscribe", "channel": self.name });
-            if rewind > 0 { msg["rewind"] = json!(rewind); }
+            if rewind > 0 {
+                msg["rewind"] = json!(rewind);
+            }
             if let Some(ref mut sink) = *self.sender.lock().await {
                 let _ = sink.send(Message::Text(msg.to_string())).await;
             }
@@ -268,7 +316,9 @@ impl ChannelHandle {
             "data": data,
             "id": Uuid::new_v4().to_string(),
         });
-        if !persist { msg["persist"] = json!(false); }
+        if !persist {
+            msg["persist"] = json!(false);
+        }
         if let Some(ref mut sink) = *self.sender.lock().await {
             let _ = sink.send(Message::Text(msg.to_string())).await;
         }
@@ -277,10 +327,18 @@ impl ChannelHandle {
     /// Query message history.
     pub async fn history(&self, opts: HistoryOptions) {
         let mut msg = json!({ "action": "history", "channel": self.name });
-        if let Some(l) = opts.limit { msg["limit"] = json!(l); }
-        if let Some(b) = opts.before { msg["before"] = json!(b); }
-        if let Some(a) = opts.after { msg["after"] = json!(a); }
-        if let Some(ref d) = opts.direction { msg["direction"] = json!(d); }
+        if let Some(l) = opts.limit {
+            msg["limit"] = json!(l);
+        }
+        if let Some(b) = opts.before {
+            msg["before"] = json!(b);
+        }
+        if let Some(a) = opts.after {
+            msg["after"] = json!(a);
+        }
+        if let Some(ref d) = opts.direction {
+            msg["direction"] = json!(d);
+        }
         if let Some(ref mut sink) = *self.sender.lock().await {
             let _ = sink.send(Message::Text(msg.to_string())).await;
         }
@@ -305,12 +363,16 @@ impl ChannelHandle {
 
     async fn emit(&self, data: Value, meta: MessageMeta) {
         let cbs = self.inner.lock().await.callbacks.clone();
-        for cb in &cbs { cb(data.clone(), meta.clone()); }
+        for cb in &cbs {
+            cb(data.clone(), meta.clone());
+        }
     }
 
     async fn emit_history(&self, result: HistoryResult) {
         let cbs = self.inner.lock().await.history_cbs.clone();
-        for cb in &cbs { cb(result.clone()); }
+        for cb in &cbs {
+            cb(result.clone());
+        }
     }
 
     async fn mark_for_resubscribe(&self) {
@@ -327,7 +389,16 @@ impl ChannelHandle {
 /// Convenience proxy that exposes pub/sub channel access.
 pub struct PubSubNamespace {
     channels: Arc<RwLock<HashMap<String, ChannelHandle>>>,
-    sender: Arc<Mutex<Option<futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>>,
+    sender: Arc<
+        Mutex<
+            Option<
+                futures_util::stream::SplitSink<
+                    WebSocketStream<MaybeTlsStream<TcpStream>>,
+                    Message,
+                >,
+            >,
+        >,
+    >,
 }
 
 impl PubSubNamespace {
@@ -345,7 +416,16 @@ impl PubSubNamespace {
 
 pub struct Client {
     channels: Arc<RwLock<HashMap<String, ChannelHandle>>>,
-    sender: Arc<Mutex<Option<futures_util::stream::SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>>>>,
+    sender: Arc<
+        Mutex<
+            Option<
+                futures_util::stream::SplitSink<
+                    WebSocketStream<MaybeTlsStream<TcpStream>>,
+                    Message,
+                >,
+            >,
+        >,
+    >,
     last_message_ts: Arc<RwLock<u64>>,
     resume_token: Arc<RwLock<Option<String>>>,
     read_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
@@ -358,13 +438,17 @@ pub struct Client {
 
 impl Client {
     /// Connect to the wSocket server.
-    pub async fn connect(url: &str, api_key: &str) -> Result<Arc<Self>, Box<dyn std::error::Error>> {
+    pub async fn connect(
+        url: &str,
+        api_key: &str,
+    ) -> Result<Arc<Self>, Box<dyn std::error::Error>> {
         let ws_url = format!("{}/?key={}", url, api_key);
         let (ws, _) = connect_async(&ws_url).await?;
         let (sink, stream) = ws.split();
 
         let sender = Arc::new(Mutex::new(Some(sink)));
-        let channels: Arc<RwLock<HashMap<String, ChannelHandle>>> = Arc::new(RwLock::new(HashMap::new()));
+        let channels: Arc<RwLock<HashMap<String, ChannelHandle>>> =
+            Arc::new(RwLock::new(HashMap::new()));
         let last_message_ts = Arc::new(RwLock::new(0u64));
         let resume_token: Arc<RwLock<Option<String>>> = Arc::new(RwLock::new(None));
 
@@ -375,7 +459,10 @@ impl Client {
             resume_token: resume_token.clone(),
             read_handle: Arc::new(Mutex::new(None)),
             ping_handle: Arc::new(Mutex::new(None)),
-            pubsub: PubSubNamespace { channels: channels.clone(), sender: sender.clone() },
+            pubsub: PubSubNamespace {
+                channels: channels.clone(),
+                sender: sender.clone(),
+            },
             push: Arc::new(RwLock::new(None)),
         });
 
@@ -436,8 +523,12 @@ impl Client {
 
     /// Disconnect from the server.
     pub async fn disconnect(&self) {
-        if let Some(h) = self.ping_handle.lock().await.take() { h.abort(); }
-        if let Some(h) = self.read_handle.lock().await.take() { h.abort(); }
+        if let Some(h) = self.ping_handle.lock().await.take() {
+            h.abort();
+        }
+        if let Some(h) = self.read_handle.lock().await.take() {
+            h.abort();
+        }
         if let Some(ref mut sink) = *self.sender.lock().await {
             let _ = sink.close().await;
         }
@@ -478,13 +569,27 @@ impl Client {
                 let chs = channels.read().await;
                 if let Some(ch) = chs.get(channel) {
                     let data = root.get("data").cloned().unwrap_or(Value::Null);
-                    let id = root.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                    let id = root
+                        .get("id")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string();
                     let ts = root.get("timestamp").and_then(|v| v.as_u64()).unwrap_or(0);
                     {
                         let mut lts = last_ts.write().await;
-                        if ts > *lts { *lts = ts; }
+                        if ts > *lts {
+                            *lts = ts;
+                        }
                     }
-                    ch.emit(data, MessageMeta { id, channel: channel.to_string(), timestamp: ts }).await;
+                    ch.emit(
+                        data,
+                        MessageMeta {
+                            id,
+                            channel: channel.to_string(),
+                            timestamp: ts,
+                        },
+                    )
+                    .await;
                 }
             }
             "presence.enter" => {
@@ -512,7 +617,10 @@ impl Client {
                 let chs = channels.read().await;
                 if let Some(ch) = chs.get(channel) {
                     let members = match root.get("data").and_then(|d| d.as_array()) {
-                        Some(arr) => arr.iter().map(|v| Self::parse_presence_member(Some(v))).collect(),
+                        Some(arr) => arr
+                            .iter()
+                            .map(|v| Self::parse_presence_member(Some(v)))
+                            .collect(),
                         None => Vec::new(),
                     };
                     ch.presence().emit_members(members).await;
@@ -527,13 +635,20 @@ impl Client {
             }
             "ack" => {
                 if root.get("id").and_then(|v| v.as_str()) == Some("resume") {
-                    if let Some(token) = root.get("data").and_then(|d| d.get("resumeToken")).and_then(|t| t.as_str()) {
+                    if let Some(token) = root
+                        .get("data")
+                        .and_then(|d| d.get("resumeToken"))
+                        .and_then(|t| t.as_str())
+                    {
                         *resume_token.write().await = Some(token.to_string());
                     }
                 }
             }
             "error" => {
-                let err = root.get("error").and_then(|e| e.as_str()).unwrap_or("unknown");
+                let err = root
+                    .get("error")
+                    .and_then(|e| e.as_str())
+                    .unwrap_or("unknown");
                 eprintln!("[wSocket] Error: {}", err);
             }
             _ => {}
@@ -557,14 +672,29 @@ impl Client {
             if let Some(ch) = obj.get("channel").and_then(|c| c.as_str()) {
                 result.channel = ch.to_string();
             }
-            result.has_more = obj.get("hasMore").and_then(|h| h.as_bool()).unwrap_or(false);
+            result.has_more = obj
+                .get("hasMore")
+                .and_then(|h| h.as_bool())
+                .unwrap_or(false);
             if let Some(msgs) = obj.get("messages").and_then(|m| m.as_array()) {
                 for m in msgs {
                     result.messages.push(HistoryMessage {
-                        id: m.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-                        channel: m.get("channel").and_then(|v| v.as_str()).unwrap_or(channel).to_string(),
+                        id: m
+                            .get("id")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
+                            .to_string(),
+                        channel: m
+                            .get("channel")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or(channel)
+                            .to_string(),
                         data: m.get("data").cloned().unwrap_or(Value::Null),
-                        publisher_id: m.get("publisherId").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                        publisher_id: m
+                            .get("publisherId")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
+                            .to_string(),
                         timestamp: m.get("timestamp").and_then(|v| v.as_u64()).unwrap_or(0),
                         sequence: m.get("sequence").and_then(|v| v.as_u64()).unwrap_or(0),
                     });
@@ -617,9 +747,16 @@ impl PushClient {
         }
     }
 
-    async fn api(&self, method: reqwest::Method, path: &str, body: Option<Value>) -> Result<Value, Box<dyn std::error::Error>> {
+    async fn api(
+        &self,
+        method: reqwest::Method,
+        path: &str,
+        body: Option<Value>,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
         let url = format!("{}{}", self.base_url, path);
-        let mut req = self.http.request(method, &url)
+        let mut req = self
+            .http
+            .request(method, &url)
             .header("Authorization", format!("Bearer {}", self.token))
             .header("Content-Type", "application/json");
         if let Some(b) = body {
@@ -635,43 +772,87 @@ impl PushClient {
     }
 
     /// Register an FCM device token (Android).
-    pub async fn register_fcm(&self, device_token: &str, member_id: &str) -> Result<String, Box<dyn std::error::Error>> {
-        let res = self.api(reqwest::Method::POST, "/api/push/register", Some(serde_json::json!({
-            "platform": "fcm", "memberId": member_id, "deviceToken": device_token
-        }))).await?;
+    pub async fn register_fcm(
+        &self,
+        device_token: &str,
+        member_id: &str,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let res = self
+            .api(
+                reqwest::Method::POST,
+                "/api/push/register",
+                Some(serde_json::json!({
+                    "platform": "fcm", "memberId": member_id, "deviceToken": device_token
+                })),
+            )
+            .await?;
         Ok(res["subscriptionId"].as_str().unwrap_or("").to_string())
     }
 
     /// Register an APNs device token (iOS).
-    pub async fn register_apns(&self, device_token: &str, member_id: &str) -> Result<String, Box<dyn std::error::Error>> {
-        let res = self.api(reqwest::Method::POST, "/api/push/register", Some(serde_json::json!({
-            "platform": "apns", "memberId": member_id, "deviceToken": device_token
-        }))).await?;
+    pub async fn register_apns(
+        &self,
+        device_token: &str,
+        member_id: &str,
+    ) -> Result<String, Box<dyn std::error::Error>> {
+        let res = self
+            .api(
+                reqwest::Method::POST,
+                "/api/push/register",
+                Some(serde_json::json!({
+                    "platform": "apns", "memberId": member_id, "deviceToken": device_token
+                })),
+            )
+            .await?;
         Ok(res["subscriptionId"].as_str().unwrap_or("").to_string())
     }
 
     /// Unregister push subscriptions for a member.
-    pub async fn unregister(&self, member_id: &str, platform: Option<&str>) -> Result<u64, Box<dyn std::error::Error>> {
+    pub async fn unregister(
+        &self,
+        member_id: &str,
+        platform: Option<&str>,
+    ) -> Result<u64, Box<dyn std::error::Error>> {
         let mut body = serde_json::json!({ "memberId": member_id });
         if let Some(p) = platform {
             body["platform"] = Value::String(p.to_string());
         }
-        let res = self.api(reqwest::Method::DELETE, "/api/push/unregister", Some(body)).await?;
+        let res = self
+            .api(reqwest::Method::DELETE, "/api/push/unregister", Some(body))
+            .await?;
         Ok(res["removed"].as_u64().unwrap_or(0))
     }
 
     /// Send a push notification to a specific member.
-    pub async fn send_to_member(&self, member_id: &str, title: &str, body: Option<&str>) -> Result<Value, Box<dyn std::error::Error>> {
-        self.api(reqwest::Method::POST, "/api/push/send", Some(serde_json::json!({
-            "memberId": member_id, "title": title, "body": body
-        }))).await
+    pub async fn send_to_member(
+        &self,
+        member_id: &str,
+        title: &str,
+        body: Option<&str>,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
+        self.api(
+            reqwest::Method::POST,
+            "/api/push/send",
+            Some(serde_json::json!({
+                "memberId": member_id, "title": title, "body": body
+            })),
+        )
+        .await
     }
 
     /// Broadcast a push notification to all app subscribers.
-    pub async fn broadcast(&self, title: &str, body: Option<&str>) -> Result<Value, Box<dyn std::error::Error>> {
-        self.api(reqwest::Method::POST, "/api/push/broadcast", Some(serde_json::json!({
-            "title": title, "body": body
-        }))).await
+    pub async fn broadcast(
+        &self,
+        title: &str,
+        body: Option<&str>,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
+        self.api(
+            reqwest::Method::POST,
+            "/api/push/broadcast",
+            Some(serde_json::json!({
+                "title": title, "body": body
+            })),
+        )
+        .await
     }
 }
-
