@@ -1,7 +1,7 @@
 //! wSocket Rust SDK — Realtime Pub/Sub client with Presence, History, and Connection Recovery.
 //!
 //! # Example
-//! ```no_run
+//! ```ignore
 //! use wsocket_io::Client;
 //!
 //! #[tokio::main]
@@ -578,8 +578,8 @@ impl Client {
 /// REST-based push notification client for wSocket.
 ///
 /// # Example
-/// ```no_run
-/// let push = wsocket::PushClient::new("http://localhost:9001", "admin-token", "app-id");
+/// ```ignore
+/// let push = wsocket_io::PushClient::new("http://localhost:9001", "admin-token", "app-id");
 /// push.register_fcm("device-token", "user1").await?;
 /// push.send_to_member("user1", "Hello", Some("World")).await?;
 /// ```
