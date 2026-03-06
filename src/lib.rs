@@ -25,6 +25,8 @@
 //! }
 //! ```
 
+#![allow(dead_code, unused_imports, clippy::type_complexity)]
+
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
 use futures_util::{SinkExt, StreamExt};
