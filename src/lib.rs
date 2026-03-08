@@ -870,4 +870,57 @@ impl PushClient {
         )
         .await
     }
+
+    /// Add a channel to a member's push subscriptions.
+    pub async fn add_channel(
+        &self,
+        member_id: &str,
+        channel: &str,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
+        self.api(
+            reqwest::Method::POST,
+            "/api/push/channels/add",
+            Some(serde_json::json!({
+                "memberId": member_id, "channel": channel
+            })),
+        )
+        .await
+    }
+
+    /// Remove a channel from a member's push subscriptions.
+    pub async fn remove_channel(
+        &self,
+        member_id: &str,
+        channel: &str,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
+        self.api(
+            reqwest::Method::POST,
+            "/api/push/channels/remove",
+            Some(serde_json::json!({
+                "memberId": member_id, "channel": channel
+            })),
+        )
+        .await
+    }
+
+    /// Get the VAPID public key for this app.
+    pub async fn get_vapid_key(&self) -> Result<Option<String>, Box<dyn std::error::Error>> {
+        let res = self.api(reqwest::Method::GET, "/api/push/vapid-key", None).await?;
+        Ok(res["vapidPublicKey"].as_str().map(|s| s.to_string()))
+    }
+
+    /// List push subscriptions with optional filters.
+    pub async fn list_subscriptions(
+        &self,
+        member_id: Option<&str>,
+        platform: Option<&str>,
+        limit: Option<u32>,
+    ) -> Result<Value, Box<dyn std::error::Error>> {
+        let mut params = Vec::new();
+        if let Some(m) = member_id { params.push(format!("memberId={}", m)); }
+        if let Some(p) = platform { params.push(format!("platform={}", p)); }
+        if let Some(l) = limit { params.push(format!("limit={}", l)); }
+        let qs = if params.is_empty() { String::new() } else { format!("?{}", params.join("&")) };
+        self.api(reqwest::Method::GET, &format!("/api/push/subscriptions{}", qs), None).await
+    }
 }
