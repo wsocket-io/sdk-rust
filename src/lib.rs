@@ -823,6 +823,21 @@ impl PushClient {
         Ok(res["removed"].as_u64().unwrap_or(0))
     }
 
+    /// Delete a specific push subscription by its ID.
+    pub async fn delete_subscription(
+        &self,
+        subscription_id: &str,
+    ) -> Result<bool, Box<dyn std::error::Error>> {
+        let res = self
+            .api(
+                reqwest::Method::DELETE,
+                &format!("/api/push/subscriptions/{}", subscription_id),
+                None,
+            )
+            .await?;
+        Ok(res["deleted"].as_bool().unwrap_or(false))
+    }
+
     /// Send a push notification to a specific member.
     pub async fn send_to_member(
         &self,
