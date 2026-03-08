@@ -75,6 +75,25 @@ chat.on_history(|result| {
 chat.history(HistoryOptions { limit: Some(50), ..Default::default() }).await;
 ```
 
+## Push Notifications
+
+```rust
+let push = PushClient::new("https://your-server.com", "your-api-key", "your-app-id");
+
+// Register & send
+push.register_fcm("device-token", "user-123").await?;
+push.send_to_member("user-123", json!({"title": "Hello"})).await?;
+push.broadcast(json!({"title": "News"})).await?;
+
+// Channel targeting
+push.add_channel("subscription-id", "alerts").await?;
+push.remove_channel("subscription-id", "alerts").await?;
+
+// VAPID key & subscriptions
+let vapid_key = push.get_vapid_key().await?;
+let subs = push.list_subscriptions("user-123").await?;
+```
+
 ## Requirements
 
 - Rust edition 2021+
